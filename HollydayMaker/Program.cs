@@ -15,3 +15,13 @@ foreach (Customer customer in customers)
     Console.WriteLine(customer);
 }
 
+var roomRepository = new RoomRepository(connection);
+
+List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(
+    "Båstad", new DateOnly(2026, 12, 22), new DateOnly(2026, 12, 24), 4);
+
+Console.WriteLine($"Lediga rum: {rooms.Count}");
+foreach (AvailableRoom room in rooms)
+{
+    Console.WriteLine(room);
+}
