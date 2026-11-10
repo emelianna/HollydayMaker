@@ -1,5 +1,5 @@
 ﻿using MySqlConnector;
-using HollydayMaker;
+using HolidayMaker;
 
 string connectionString = "Server=localhost;Port=3307;Database=holiday_maker;User ID=root;Password=kurslosenord;UseAffectedRows=false;";
 
@@ -14,3 +14,4 @@ foreach (Customer customer in customers)
 {
     Console.WriteLine(customer);
 }
+
