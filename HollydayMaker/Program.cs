@@ -26,7 +26,7 @@ foreach (AvailableRoom room in rooms)
     Console.WriteLine(room);
 }
 
-var bookingRepository = new BookingRepository(connection); //Test för att se så dubbelbokningar ej är möjliga
+/*var bookingRepository = new BookingRepository(connection); //Test för att se så dubbelbokningar ej är möjliga
 
 int customerId = 6;
 int roomId = 8;
@@ -43,14 +43,25 @@ if (isAvailable)
 else
 {
     Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
+}
+*/
     
     // Test: avbokning frigör rummet
-int bookingToDelete = 26;
-int deleted = await bookingRepository.DeleteBookingAsync(bookingToDelete);
-Console.WriteLine($"Borttagna bokningar: {deleted}");
+//int bookingToDelete = 26;
+//int deleted = await bookingRepository.DeleteBookingAsync(bookingToDelete);
+//Console.WriteLine($"Borttagna bokningar: {deleted}");
 
-List<AvailableRoom> roomsAfter = await roomRepository.SearchAvailableRoomsAsync(
-    "Malmö", new DateOnly(2026, 12, 10), new DateOnly(2026, 12, 13), 2);
-Console.WriteLine($"Lediga rum efter avbokning: {roomsAfter.Count}");
-}
+//List<AvailableRoom> roomsAfter = await roomRepository.SearchAvailableRoomsAsync(
+  //  "Malmö", new DateOnly(2026, 12, 10), new DateOnly(2026, 12, 13), 2);
+//Console.WriteLine($"Lediga rum efter avbokning: {roomsAfter.Count}");
+
+
+// Test: visa kundens bokningar (punkt 4)
+//int customerToShow = 6;
+//List<BookingInfo> customerBookings = await bookingRepository.GetBookingsForCustomerAsync(customerToShow);
+//Console.WriteLine($"Bokningar för kund {customerToShow}: {customerBookings.Count}");
+//foreach (BookingInfo booking in customerBookings)
+//{
+//    Console.WriteLine(booking);
+//}
 

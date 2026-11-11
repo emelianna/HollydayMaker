@@ -64,7 +64,8 @@ public class BookingRepository(MySqlConnection connection)
                DATEDIFF(bookings.end_date, bookings.start_date) * rooms.price AS total_price
         FROM bookings JOIN rooms ON bookings.room_id = rooms.id
         JOIN hotels ON rooms.hotel_id = hotels.id
-        WHERE bookings.customer_id = @customerId;
+        WHERE bookings.customer_id = @customerId
+        ORDER BY bookings.start_date;
         """, connection);
     command.Parameters.AddWithValue("@customerId", customerId);
     await using var reader = await command.ExecuteReaderAsync();
@@ -81,7 +82,8 @@ public class BookingRepository(MySqlConnection connection)
             reader.GetDateOnly("end_date"),
             reader.GetInt32("number_of_guests"),
             reader.GetDecimal("total_price")
-        ));
+        ))
+            ;
     }
 
     return bookings;
