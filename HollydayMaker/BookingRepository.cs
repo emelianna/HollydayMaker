@@ -22,7 +22,7 @@ public class BookingRepository(MySqlConnection connection)
         return checked((int)command.LastInsertedId); // det nya id:t = bokningsnumret
     }
     
-    // Kontroll innan bokning sparas för att undvika krock. 
+    // READ: Kontroll innan bokning sparas för att undvika krock. 
     public async Task<bool> IsRoomAvailableAsync(int roomId, DateOnly checkIn, DateOnly checkOut)
     {
         await using var command = new MySqlCommand(
@@ -41,4 +41,17 @@ public class BookingRepository(MySqlConnection connection)
         bool isAvailable = count == 0;
         return isAvailable;; // 0 krockar = ledigt
     }
+
+    public async Task<int> DeleteBookingAsync(int bookingId) //DELETE: Avbokning
+    {
+        await using var command = new MySqlCommand(
+            """
+            DELETE FROM bookings
+            WHERE id = @bookingId;
+            """, connection);
+        command.Parameters.AddWithValue("@bookingId", bookingId);
+        int rowsAffected = await command.ExecuteNonQueryAsync();
+        return rowsAffected;
+    }
+    
 }

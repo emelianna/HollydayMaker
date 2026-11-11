@@ -28,7 +28,7 @@ public class RoomRepository(MySqlConnection connection)
         await command.PrepareAsync();
         await using var reader = await command.ExecuteReaderAsync();
 
-        var rooms = new List<AvailableRoom>();           //Lista på tillgängliga rum som rymmer hela sällskapet
+        var rooms = new List<AvailableRoom>();           
         while (await reader.ReadAsync())
         {
             rooms.Add(new AvailableRoom(
@@ -39,6 +39,6 @@ public class RoomRepository(MySqlConnection connection)
                 reader.GetInt32("capacity"),
                 reader.GetDecimal("price")));
         }
-        return rooms;
+        return rooms;         //Lista på tillgängliga rum som rymmer hela sällskapet
     }
 }

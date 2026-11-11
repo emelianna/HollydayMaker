@@ -16,7 +16,7 @@ public class CustomerRepository(MySqlConnection connection)
         await using var reader = await command.ExecuteReaderAsync();
 
         var customers = new List<Customer>();
-
+ 
         while (await reader.ReadAsync()) // så länge det finns en rad till, läs den
         {
             customers.Add(new Customer(
