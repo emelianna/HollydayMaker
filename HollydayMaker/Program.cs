@@ -101,8 +101,7 @@ else
               Console.WriteLine("Du valde 1");
               break;
           case "2":
-              Console.WriteLine("Vilken ort?: "); 
-              
+              Console.WriteLine("Vilken ort?: ");
               string? cityInput = Console.ReadLine();
               string city = cityInput!;
               
@@ -135,8 +134,22 @@ else
           case "5":
               Console.WriteLine("Du valde 5");
               break;
+         
           case "6":
-              Console.WriteLine("Du valde 6");
+              Console.Write("Ange bokningsnummer att avboka: ");
+              string? bookingIdInput = Console.ReadLine();
+              int bookingIdToDelete = int.Parse(bookingIdInput!);
+
+              int deletedRows = await bookingRepository.DeleteBookingAsync(bookingIdToDelete);
+
+              if (deletedRows == 1)
+              {
+                  Console.WriteLine("Bokningen är avbokad.");
+              }
+              else
+              {
+                  Console.WriteLine("Ingen bokning med det numret hittades.");
+              }
               break;
           
           case "0":
