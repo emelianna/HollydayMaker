@@ -9,24 +9,24 @@ Console.WriteLine("Ansluten till databasen!");
 
 var customerRepository = new CustomerRepository(connection);
 
-List<Customer> customers = await customerRepository.GetCustomersAsync();
+/*List<Customer> customers = await customerRepository.GetCustomersAsync();
 foreach (Customer customer in customers)
 {
     Console.WriteLine(customer);
-}
+}*/
 
 var roomRepository = new RoomRepository(connection);
 
-List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(
+/*List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(
     "Malmö", new DateOnly(2026, 12, 10), new DateOnly(2026, 12, 13), 2);
 
 Console.WriteLine($"Lediga rum: {rooms.Count}");
 foreach (AvailableRoom room in rooms)
 {
     Console.WriteLine(room);
-}
+}*/
 
-var bookingRepository = new BookingRepository(connection); //Test för att se så dubbelbokningar ej är möjliga
+var bookingRepository = new BookingRepository(connection); 
 
 /*int customerId = 6;
 int roomId = 8;
@@ -67,7 +67,7 @@ else
 
 //Test: ändra antal personer (punkt 5)
   
-int bookingToChange = 1;
+/*int bookingToChange = 1;
 
   int tooManyGuests = 3;
   int result1 = await bookingRepository.UpdateGuestsAsync(bookingToChange, tooManyGuests);
@@ -75,4 +75,53 @@ int bookingToChange = 1;
 
   int fits = 2;
   int result2 = await bookingRepository.UpdateGuestsAsync(bookingToChange, fits);
-  Console.WriteLine($"Ändra till {fits} gäster: {result2} rad(er) ändrade");
+  Console.WriteLine($"Ändra till {fits} gäster: {result2} rad(er) ändrade");*/
+  
+  // ===== MENY =====
+  bool running = true;
+
+  while (running)
+  {
+      Console.WriteLine();
+      Console.WriteLine("***** HOLIDAY MAKER *****");
+      Console.WriteLine("1. Välj kund");
+      Console.WriteLine("2. Sök lediga rum");
+      Console.WriteLine("3. Boka");
+      Console.WriteLine("4. Visa bokningar");
+      Console.WriteLine("5. Ändra antal personer");
+      Console.WriteLine("6. Avboka");
+      Console.WriteLine("0. Avsluta");
+      Console.Write("Välj: ");
+
+      string? choice = Console.ReadLine();
+
+      switch (choice)
+      {
+          case "1":
+              Console.WriteLine("Du valde 1");
+              break;
+          case "2":
+              Console.WriteLine("Du valde 2");
+              break;
+          case "3":
+              Console.WriteLine("Du valde 3");
+              break;
+          case "4":
+              Console.WriteLine("Du valde 4");
+              break;
+          case "5":
+              Console.WriteLine("Du valde 5");
+              break;
+          case "6":
+              Console.WriteLine("Du valde 6");
+              break;
+          
+          case "0":
+              running = false;
+              Console.WriteLine("Hej då!");
+              break;
+          default:
+              Console.WriteLine("Ogiltigt val, försök igen.");
+              break;
+      }
+  }
