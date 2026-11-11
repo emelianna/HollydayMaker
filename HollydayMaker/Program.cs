@@ -26,9 +26,9 @@ foreach (AvailableRoom room in rooms)
     Console.WriteLine(room);
 }
 
-/*var bookingRepository = new BookingRepository(connection); //Test för att se så dubbelbokningar ej är möjliga
+var bookingRepository = new BookingRepository(connection); //Test för att se så dubbelbokningar ej är möjliga
 
-int customerId = 6;
+/*int customerId = 6;
 int roomId = 8;
 DateOnly checkIn = new DateOnly(2026, 12, 8);
 DateOnly checkOut = new DateOnly(2026, 12, 15);
@@ -65,3 +65,14 @@ else
 //    Console.WriteLine(booking);
 //}
 
+//Test: ändra antal personer (punkt 5)
+  
+int bookingToChange = 1;
+
+  int tooManyGuests = 3;
+  int result1 = await bookingRepository.UpdateGuestsAsync(bookingToChange, tooManyGuests);
+  Console.WriteLine($"Ändra till {tooManyGuests} gäster: {result1} rad(er) ändrade");
+
+  int fits = 2;
+  int result2 = await bookingRepository.UpdateGuestsAsync(bookingToChange, fits);
+  Console.WriteLine($"Ändra till {fits} gäster: {result2} rad(er) ändrade");
