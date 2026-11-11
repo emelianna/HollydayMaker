@@ -80,11 +80,13 @@ else
   // MENY 
   bool running = true;
 
+  int selectedCustomerId = 0;   // För att komma ihåg vald kund. 0 = ingen kund vald än
+
   while (running)
   {
       Console.WriteLine();
       Console.WriteLine("***** HOLIDAY MAKER *****");
-      Console.WriteLine("1. Välj kund");
+      Console.WriteLine("1. Välj kund / registrera ny kund");
       Console.WriteLine("2. Sök lediga rum");
       Console.WriteLine("3. Boka");
       Console.WriteLine("4. Visa bokningar");
@@ -98,8 +100,42 @@ else
       switch (choice)
       {
           case "1":
-              Console.WriteLine("Du valde 1");
+              List<Customer> allCustomers = await customerRepository.GetCustomersAsync();
+              foreach (Customer customer in allCustomers)
+              {
+                  Console.WriteLine(customer);
+              }
+
+              Console.Write("Ange kundnummer (eller 0 för ny kund): ");
+              string? customerChoiceInput = Console.ReadLine();
+              int customerChoice = int.Parse(customerChoiceInput!);
+
+              if (customerChoice == 0)
+              {
+                  Console.Write("Förnamn: ");
+                  string firstName = Console.ReadLine()!;
+                  Console.Write("Efternamn: ");
+                  string lastName = Console.ReadLine()!;
+                  Console.Write("Telefon: ");
+                  string phone = Console.ReadLine()!;
+                  Console.Write("E-post (tryck Enter för att hoppa över): ");
+                  string? emailInput = Console.ReadLine();
+                  string? email = null;
+                  if (emailInput != "")
+                  {
+                      email = emailInput;
+                  }
+
+                  selectedCustomerId = await customerRepository.CreateCustomerAsync(firstName, lastName, phone, email);
+                  Console.WriteLine($"Ny kund skapad med kundnummer {selectedCustomerId}.");
+              }
+              else
+              {
+                  selectedCustomerId = customerChoice;
+                  Console.WriteLine($"Kund {selectedCustomerId} är vald.");
+              }
               break;
+              
           case "2":
               Console.WriteLine("Vilken ort?: ");
               string? cityInput = Console.ReadLine();
@@ -126,14 +162,75 @@ else
               break;
           
           case "3":
-              Console.WriteLine("Du valde 3");
+              if (selectedCustomerId == 0)
+              {
+                  Console.WriteLine("Om bokningen gäller en ny kund, registrera via val 1 först.");
+                  Console.Write("Ange kundnummer (eller 0 för att komma tillbaka till menyn): ");
+                  string? bookCustomerInput = Console.ReadLine();
+                  selectedCustomerId = int.Parse(bookCustomerInput!);
+                  if (selectedCustomerId == 0)
+                  {
+                      break;
+                  }
+              }
+
+              Console.Write("Rumsnummer (RoomId från sökningen): ");
+              int bookRoomId = int.Parse(Console.ReadLine()!);
+              Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
+              DateOnly bookIn = DateOnly.Parse(Console.ReadLine()!);
+              Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
+              DateOnly bookOut = DateOnly.Parse(Console.ReadLine()!);
+              Console.Write("Antal personer: ");
+              int bookGuests = int.Parse(Console.ReadLine()!);
+
+              bool roomIsFree = await bookingRepository.IsRoomAvailableAsync(bookRoomId, bookIn, bookOut);
+              if (roomIsFree)
+              {
+                  int newBookingId = await bookingRepository.CreateBookingAsync(selectedCustomerId, bookRoomId, bookIn, bookOut, bookGuests);
+                  Console.WriteLine($"Bokning skapad! Bokningsnummer: {newBookingId}");
+              }
+              else
+              {
+                  Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
+              }
               break;
+           
+         
           case "4":
-              Console.WriteLine("Du valde 4");
+              Console.Write("Ange kundnummer: ");
+              string? customerIdInput = Console.ReadLine();
+              int customerIdToShow = int.Parse(customerIdInput!);
+
+              List<BookingInfo> customerBookings = await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
+
+              Console.WriteLine($"Bokningar gjorda med det kundnumret: {customerBookings.Count}");
+              foreach (BookingInfo booking in customerBookings)
+              {
+                  Console.WriteLine(booking);
+              }
               break;
+
           case "5":
-              Console.WriteLine("Du valde 5");
+              Console.Write("Ange bokningsnummer: ");
+              string? changeIdInput = Console.ReadLine();
+              int bookingIdToChange = int.Parse(changeIdInput!);
+
+              Console.Write("Nytt antal personer: ");
+              string? newGuestsInput = Console.ReadLine();
+              int newGuests = int.Parse(newGuestsInput!);
+
+              int updatedRows = await bookingRepository.UpdateGuestsAsync(bookingIdToChange, newGuests);
+
+              if (updatedRows == 1)
+              {
+                  Console.WriteLine("Antalet personer är ändrat.");
+              }
+              else
+              {
+                  Console.WriteLine("Det gick inte! Rummet har inte plats, eller så finns inte bokningen.");
+              }
               break;
+          
          
           case "6":
               Console.Write("Ange bokningsnummer att avboka: ");
