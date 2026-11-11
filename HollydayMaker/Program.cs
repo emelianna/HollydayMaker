@@ -77,7 +77,7 @@ else
   int result2 = await bookingRepository.UpdateGuestsAsync(bookingToChange, fits);
   Console.WriteLine($"Ändra till {fits} gäster: {result2} rad(er) ändrade");*/
   
-  // ===== MENY =====
+  // MENY 
   bool running = true;
 
   while (running)
@@ -101,8 +101,31 @@ else
               Console.WriteLine("Du valde 1");
               break;
           case "2":
-              Console.WriteLine("Du valde 2");
+              Console.WriteLine("Vilken ort?: "); 
+              
+              string? cityInput = Console.ReadLine();
+              string city = cityInput!;
+              
+              Console.WriteLine("Ange datum för incheckning (ÅÅÅÅ-MM-DD): "); 
+              string? inDateInput = Console.ReadLine();
+              DateOnly inDate = DateOnly.Parse(inDateInput!);
+              
+              Console.Write("Ange datum för utcheckning (ÅÅÅÅ-MM-DD): ");
+              string? outDateInput = Console.ReadLine();
+              DateOnly outDate = DateOnly.Parse(outDateInput!);
+
+              Console.Write("Antal personer: ");
+              string? guestsInput = Console.ReadLine();
+              int guests = int.Parse(guestsInput!);
+              List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests);
+
+              Console.WriteLine("Alternativ som passar din sökning:");
+              foreach (AvailableRoom room in rooms)
+              {
+                  Console.WriteLine(room);
+              }
               break;
+          
           case "3":
               Console.WriteLine("Du valde 3");
               break;
