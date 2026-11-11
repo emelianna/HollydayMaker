@@ -53,5 +53,38 @@ public class BookingRepository(MySqlConnection connection)
         int rowsAffected = await command.ExecuteNonQueryAsync();
         return rowsAffected;
     }
+
+    public async Task<List<BookingInfo>> GetBookingsForCustomerAsync(int customerId)
+    {
+        
+    await using var command = new MySqlCommand(
+        """
+        SELECT bookings.id, hotels.name AS hotel_name, hotels.city, rooms.name AS room_name,
+               bookings.start_date, bookings.end_date, bookings.number_of_guests,
+               DATEDIFF(bookings.end_date, bookings.start_date) * rooms.price AS total_price
+        FROM bookings JOIN rooms ON bookings.room_id = rooms.id
+        JOIN hotels ON rooms.hotel_id = hotels.id
+        WHERE bookings.customer_id = @customerId;
+        """, connection);
+    command.Parameters.AddWithValue("@customerId", customerId);
+    await using var reader = await command.ExecuteReaderAsync();
+    var bookings = new List<BookingInfo>();
+
+    while (await reader.ReadAsync())
+    {
+        bookings.Add(new BookingInfo(
+            reader.GetInt32("id"),
+            reader.GetString("hotel_name"),
+            reader.GetString("city"),
+            reader.GetString("room_name"),
+            reader.GetDateOnly("start_date"),
+            reader.GetDateOnly("end_date"),
+            reader.GetInt32("number_of_guests"),
+            reader.GetDecimal("total_price")
+        ));
+    }
+
+    return bookings;
+    }
     
 }
