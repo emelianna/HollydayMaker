@@ -7,6 +7,8 @@ public class RoomRepository(MySqlConnection connection)
     // READ: visar lediga rum på en ort, med plats för sällskapet under hela perioden (punkt 2)
     public async Task<List<AvailableRoom>> SearchAvailableRoomsAsync(
         string city, DateOnly checkIn, DateOnly checkOut, int guests)
+    //Om valt checkin är före en befintlig boknings checkout och valt checkout är efter samma boknings checkin
+    //så krockar de => rummet visas inte.
     {
         await using var command = new MySqlCommand(
             """

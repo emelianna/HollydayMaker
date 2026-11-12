@@ -4,7 +4,7 @@ namespace HolidayMaker;
 
 public class BookingRepository(MySqlConnection connection)
 {
-    // CREATE: sparar en bokning och returnerar bokningsnumret (punkt 3)
+    // CREATE: sparar en bokning och returnerar bokningsnumret 
     public async Task<int> CreateBookingAsync(int customerId, int roomId, DateOnly checkIn, DateOnly checkOut,
         int guests)
     {
@@ -23,14 +23,18 @@ public class BookingRepository(MySqlConnection connection)
         return checked((int)command.LastInsertedId); // det nya id:t = bokningsnumret
     }
 
-    // READ: Kontroll innan bokning sparas för att undvika krock. 
+    
+    // READ: Kontroll innan bokning sparas för att undvika krock.
+    
     public async Task<bool> IsRoomAvailableAsync(int roomId, DateOnly checkIn, DateOnly checkOut)
     {
+        //Kontroll om den nya bokningen börjar innan den befintliga slutar + om den nya bokningen slutar efter den befintliga börjat.
+        //Räknar hur många som uppfyller villkoret. Om 0 => rummet är ledigt. 
         await using var command = new MySqlCommand(
             """
             SELECT COUNT(*) FROM bookings
             WHERE room_id = @roomId
-              AND @checkIn < end_date AND @checkOut > start_date;
+              AND @checkIn < end_date AND @checkOut > start_date; 
             """, connection);
         command.Parameters.AddWithValue("@roomId", roomId);
         command.Parameters.AddWithValue("@checkIn", checkIn);
@@ -95,6 +99,8 @@ public class BookingRepository(MySqlConnection connection)
 
     //UPDATE: Antra antal gäster, måste rymmas i rummet
     public async Task<int> UpdateGuestsAsync(int bookingId, int numberOfGuests)
+    //Subqueryn hämtar kapacitet för den här bokningens rum. Om antalet är för stort uppdateras 0
+    //rader. 
     {
     await using var command = new MySqlCommand(
         """
