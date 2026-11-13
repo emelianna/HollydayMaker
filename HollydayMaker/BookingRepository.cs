@@ -11,7 +11,9 @@ public class BookingRepository(MySqlConnection connection)
         await using var command = new MySqlCommand(
             """
             INSERT INTO bookings (customer_id, room_id, start_date, end_date, number_of_guests)
-            VALUES (@customerId, @roomId, @checkIn, @checkOut, @guests);
+            SELECT @customerId, @roomId, @checkIn, @checkOut, @guests
+            FROM rooms
+            WHERE rooms.id = @roomId AND rooms.capacity >= @guests;
             """, connection);
         command.Parameters.AddWithValue("@customerId", customerId);
         command.Parameters.AddWithValue("@roomId", roomId);
@@ -19,11 +21,15 @@ public class BookingRepository(MySqlConnection connection)
         command.Parameters.AddWithValue("@checkOut", checkOut);
         command.Parameters.AddWithValue("@guests", guests);
         await command.PrepareAsync();
-        await command.ExecuteNonQueryAsync();
+        int rowsAffected = await command.ExecuteNonQueryAsync();
+        if (rowsAffected == 0)
+        {
+            return 0; // ingen bokning skapad: rummet finns inte eller har inte plats
+        }
+
         return checked((int)command.LastInsertedId); // det nya id:t = bokningsnumret
     }
 
-    
     // READ: Kontroll innan bokning sparas för att undvika krock.
     
     public async Task<bool> IsRoomAvailableAsync(int roomId, DateOnly checkIn, DateOnly checkOut)
