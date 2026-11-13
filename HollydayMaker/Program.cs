@@ -115,11 +115,14 @@ while (running)
                     Console.WriteLine(customer);
                 }
 
-                Console.Write("Ange kundnummer (eller 0 för ny kund): ");
+                Console.Write("Ange kundnummer, n för ny kund (0 = tillbaka till menyn): ");
                 string? customerChoiceInput = Console.ReadLine();
-                int customerChoice = int.Parse(customerChoiceInput!);
+                if (customerChoiceInput == "0")
+                {
+                    break;
+                }
 
-                if (customerChoice == 0)
+                if (customerChoiceInput == "n")
                 {
                     Console.Write("Förnamn: ");
                     string firstName = Console.ReadLine()!;
@@ -141,18 +144,23 @@ while (running)
                 }
                 else
                 {
-                    selectedCustomerId = customerChoice;
+                    selectedCustomerId = int.Parse(customerChoiceInput!);
                     Console.WriteLine($"Kund {selectedCustomerId} är vald.");
                 }
 
                 break;
 
             case "2":
-                Console.WriteLine("Vilken ort?: ");
+                Console.Write("Vilken ort? (0 = tillbaka till menyn): ");
                 string? cityInput = Console.ReadLine();
+                if (cityInput == "0")
+                {
+                    break;
+                }
+
                 string city = cityInput!;
 
-                Console.WriteLine("Ange datum för incheckning (ÅÅÅÅ-MM-DD): ");
+                Console.Write("Ange datum för incheckning (ÅÅÅÅ-MM-DD): ");
                 string? inDateInput = Console.ReadLine();
                 DateOnly inDate = DateOnly.Parse(inDateInput!);
 
@@ -261,14 +269,17 @@ while (running)
 
                 break;
 
-            // TODO (fredag):
-
-            // 3. Hantera felaktig inmatning (kund/rum som inte finns, TryParse)
 
             case "4":
-                Console.Write("Ange kundnummer: ");
+                Console.Write("Ange kundnummer (0 = tillbaka till menyn): ");
                 string? customerIdInput = Console.ReadLine();
+                if (customerIdInput == "0")
+                {
+                    break;
+                }
+
                 int customerIdToShow = int.Parse(customerIdInput!);
+
 
                 List<BookingInfo> customerBookings =
                     await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
@@ -282,8 +293,13 @@ while (running)
                 break;
 
             case "5":
-                Console.Write("Ange bokningsnummer: ");
+                Console.Write("Ange bokningsnummer (0 = tillbaka till menyn): ");
                 string? changeIdInput = Console.ReadLine();
+                if (changeIdInput == "0")
+                {
+                    break;
+                }
+
                 int bookingIdToChange = int.Parse(changeIdInput!);
 
                 Console.Write("Nytt antal personer: ");
@@ -305,8 +321,13 @@ while (running)
 
 
             case "6":
-                Console.Write("Ange bokningsnummer att avboka: ");
+                Console.Write("Ange bokningsnummer att avboka (0 = tillbaka till menyn): ");
                 string? bookingIdInput = Console.ReadLine();
+                if (bookingIdInput == "0")
+                {
+                    break;
+                }
+
                 int bookingIdToDelete = int.Parse(bookingIdInput!);
 
                 int deletedRows = await bookingRepository.DeleteBookingAsync(bookingIdToDelete);
