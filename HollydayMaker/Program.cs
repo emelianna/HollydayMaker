@@ -160,7 +160,32 @@ while (running)
             Console.Write("Antal personer: ");
             string? guestsInput = Console.ReadLine();
             int guests = int.Parse(guestsInput!);
-            List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests);
+            
+            Console.Write("Är pool ett krav? (j/n): ");
+            string? poolInput = Console.ReadLine();
+            bool poolRequired = poolInput == "j";
+            
+            Console.Write("Är restaurang ett krav? (j/n): ");
+            string? restaurantInput = Console.ReadLine();
+            bool restaurantRequired = restaurantInput == "j";
+            
+            Console.Write("Max avstånd till strand i meter (Enter = spelar ingen roll): ");
+            string? beachInput = Console.ReadLine();
+            int? maxBeach = null;
+            if (beachInput != "")
+            {
+                maxBeach = int.Parse(beachInput!);
+            }
+            
+            Console.Write("Max avstånd till centrum i meter (Enter = spelar ingen roll): ");
+            string? centerInput = Console.ReadLine();
+            int? maxCenter = null;
+            if (centerInput != "")
+            {
+                maxCenter = int.Parse(centerInput!);
+            }
+            
+            List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests, poolRequired, restaurantRequired, maxBeach, maxCenter);
 
             Console.WriteLine("Alternativ som passar din sökning:");
             foreach (AvailableRoom room in rooms)
@@ -186,13 +211,17 @@ while (running)
 
             Console.Write("Ange rum-id från sökresultatet: ");
             int bookRoomId = int.Parse(Console.ReadLine()!);
+            
             Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
             DateOnly bookIn = DateOnly.Parse(Console.ReadLine()!);
+            
             Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
             DateOnly bookOut = DateOnly.Parse(Console.ReadLine()!);
+            
             Console.Write("Antal personer: ");
             int bookGuests = int.Parse(Console.ReadLine()!);
-
+            
+            
             bool roomIsFree = await bookingRepository.IsRoomAvailableAsync(bookRoomId, bookIn, bookOut);
             if (roomIsFree)
             {
