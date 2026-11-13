@@ -54,4 +54,16 @@ public class RoomRepository(MySqlConnection connection)
         }
         return rooms;         //Lista på tillgängliga rum som rymmer hela sällskapet
     }
+    
+    public async Task<bool> CityExistsAsync(string city)
+    {
+        string sql = "SELECT COUNT(*) FROM hotels WHERE city = @city;";
+
+        await using var command = new MySqlCommand(sql, connection);
+        command.Parameters.AddWithValue("@city", city);
+
+        object? result = await command.ExecuteScalarAsync(); //Scalar eftersom det bara är ett värde som ska hämtas
+        long count = Convert.ToInt64(result);
+        return count > 0;
+    }
 }

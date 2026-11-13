@@ -151,7 +151,9 @@ while (running)
 
                     selectedCustomerId =
                         await customerRepository.CreateCustomerAsync(firstName, lastName, phone, email);
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine($"Ny kund skapad med kundnummer {selectedCustomerId}.");
+                    Console.ResetColor();
                 }
                 else
                 {
@@ -172,6 +174,14 @@ while (running)
                 }
 
                 string city = cityInput!;
+                bool cityExists = await roomRepository.CityExistsAsync(city);
+                if (cityExists == false)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Vi har inga hotell i {city}. Välj 2 och försök igen.");
+                    Console.ResetColor();
+                    break;
+                }
 
                 Console.Write("Ange datum för incheckning (ÅÅÅÅ-MM-DD): ");
                 string? inDateInput = Console.ReadLine();
@@ -230,6 +240,11 @@ while (running)
                 Console.WriteLine("Alternativ som passar din sökning:");
                 Console.ResetColor();
                 
+                if (rooms.Count == 0)
+                {
+                    Console.WriteLine("Inga lediga rum matchar sökningen.");
+                }
+                
                 foreach (AvailableRoom room in rooms)
                 {
                     Console.WriteLine(
@@ -250,6 +265,30 @@ while (running)
                         break;
                     }
                 }
+                
+                List<Customer> customers = await customerRepository.GetCustomersAsync();
+                Customer? bookingCustomer = null;
+                foreach (Customer customer in customers)
+                {
+                    if (customer.Id == selectedCustomerId)
+                    {
+                        bookingCustomer = customer;
+                    }
+                }
+
+                if (bookingCustomer == null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"Det finns ingen kund med kundnummer {selectedCustomerId}.");
+                    Console.ResetColor();
+                    selectedCustomerId = 0;
+                    break;
+                }
+                
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine($"Bokar för: {bookingCustomer.FirstName} {bookingCustomer.LastName} (kundnr {bookingCustomer.Id})");
+                Console.ResetColor();
 
                 Console.Write("Ange rum-id från sökresultatet: ");
                 int bookRoomId = int.Parse(Console.ReadLine()!);
@@ -328,13 +367,15 @@ while (running)
                 List<BookingInfo> customerBookings =
                     await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
 
+                Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine($"Bokningar gjorda med det kundnumret: {customerBookings.Count}");
                 Console.ResetColor();
                 foreach (BookingInfo booking in customerBookings)
                 {
-                    Console.WriteLine(booking);
+                    Console.WriteLine($"  Bokning {booking.BookingNumber}: {booking.HotelName}, {booking.City} – rum {booking.RoomName}, {booking.StartDate} – {booking.EndDate}, {booking.NumberOfGuests} pers, totalt {booking.TotalPrice:0} kr");
                 }
+                Console.WriteLine();
 
                 break;
 
@@ -347,6 +388,7 @@ while (running)
                 }
 
                 int bookingIdToChange = int.Parse(changeIdInput!);
+                Console.WriteLine($"Du ändrar bokning {bookingIdToChange}.");
 
                 Console.Write("Nytt antal personer: ");
                 string? newGuestsInput = Console.ReadLine();
