@@ -9,80 +9,16 @@ await connection.OpenAsync();
 Console.WriteLine("Ansluten till databasen!");
 
 var customerRepository = new CustomerRepository(connection);
-
-/*List<Customer> customers = await customerRepository.GetCustomersAsync();
-foreach (Customer customer in customers)
-{
-    Console.WriteLine(customer);
-}*/
-
 var roomRepository = new RoomRepository(connection);
-
-/*List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(
-    "Malmö", new DateOnly(2026, 12, 10), new DateOnly(2026, 12, 13), 2);
-
-Console.WriteLine($"Lediga rum: {rooms.Count}");
-foreach (AvailableRoom room in rooms)
-{
-    Console.WriteLine(room);
-}*/
-
 var bookingRepository = new BookingRepository(connection);
 
-/*int customerId = 6;
-int roomId = 8;
-DateOnly checkIn = new DateOnly(2026, 12, 8);
-DateOnly checkOut = new DateOnly(2026, 12, 15);
-int guests = 2;
-
-bool isAvailable = await bookingRepository.IsRoomAvailableAsync(roomId, checkIn, checkOut);
-if (isAvailable)
-{
-    int bookingId = await bookingRepository.CreateBookingAsync(customerId, roomId, checkIn, checkOut, guests);
-    Console.WriteLine($"Bokning skapad! Bokningsnummer: {bookingId}");
-}
-else
-{
-    Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
-}
-*/
-
-// Test: avbokning frigör rummet
-//int bookingToDelete = 26;
-//int deleted = await bookingRepository.DeleteBookingAsync(bookingToDelete);
-//Console.WriteLine($"Borttagna bokningar: {deleted}");
-
-//List<AvailableRoom> roomsAfter = await roomRepository.SearchAvailableRoomsAsync(
-//  "Malmö", new DateOnly(2026, 12, 10), new DateOnly(2026, 12, 13), 2);
-//Console.WriteLine($"Lediga rum efter avbokning: {roomsAfter.Count}");
-
-
-// Test: visa kundens bokningar (punkt 4)
-//int customerToShow = 6;
-//List<BookingInfo> customerBookings = await bookingRepository.GetBookingsForCustomerAsync(customerToShow);
-//Console.WriteLine($"Bokningar för kund {customerToShow}: {customerBookings.Count}");
-//foreach (BookingInfo booking in customerBookings)
-//{
-//    Console.WriteLine(booking);
-//}
-
-//Test: ändra antal personer (punkt 5)
-
-/*int bookingToChange = 1;
-
-  int tooManyGuests = 3;
-  int result1 = await bookingRepository.UpdateGuestsAsync(bookingToChange, tooManyGuests);
-  Console.WriteLine($"Ändra till {tooManyGuests} gäster: {result1} rad(er) ändrade");
-
-  int fits = 2;
-  int result2 = await bookingRepository.UpdateGuestsAsync(bookingToChange, fits);
-  Console.WriteLine($"Ändra till {fits} gäster: {result2} rad(er) ändrade");*/
 
 // MENY 
 bool running = true;
 
-int selectedCustomerId = 0; //0 = ingen kund vald än
-DateOnly? searchIn = null;   // null = ingen sökning gjord än
+// 0 / null som utgångsläge innan val gjorts
+int selectedCustomerId = 0;
+DateOnly? searchIn = null;
 DateOnly? searchOut = null;
 int searchGuests = 0;
 
@@ -122,8 +58,10 @@ while (running)
                 foreach (Customer customer in allCustomers)
                 {
                     string email = customer.Email ?? "ingen e-post";
-                    Console.WriteLine($"Kundnr {customer.Id}: {customer.FirstName} {customer.LastName}, tel {customer.PhoneNumber}, {email}");
+                    Console.WriteLine(
+                        $"Kundnr {customer.Id}: {customer.FirstName} {customer.LastName}, tel {customer.PhoneNumber}, {email}");
                 }
+
                 Console.WriteLine();
 
                 Console.Write("Ange kundnummer, n för ny kund (0 = tillbaka till menyn): ");
@@ -159,7 +97,8 @@ while (running)
                 {
                     selectedCustomerId = int.Parse(customerChoiceInput!);
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"Kund {selectedCustomerId} är vald. Fortsätt med val 2 om du vill se lediga rum");
+                    Console.WriteLine(
+                        $"Kund {selectedCustomerId} är vald. Fortsätt med val 2 om du vill se lediga rum");
                     Console.ResetColor();
                 }
 
@@ -236,15 +175,17 @@ while (running)
                     restaurantRequired, maxBeach, maxCenter, sortBy);
 
                 Console.WriteLine();
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Alternativ som passar din sökning:");
                 Console.ResetColor();
-                
+
                 if (rooms.Count == 0)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Inga lediga rum matchar sökningen.");
+                    Console.ResetColor();
                 }
-                
+
                 foreach (AvailableRoom room in rooms)
                 {
                     Console.WriteLine(
@@ -265,7 +206,7 @@ while (running)
                         break;
                     }
                 }
-                
+
                 List<Customer> customers = await customerRepository.GetCustomersAsync();
                 Customer? bookingCustomer = null;
                 foreach (Customer customer in customers)
@@ -284,10 +225,11 @@ while (running)
                     selectedCustomerId = 0;
                     break;
                 }
-                
+
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine($"Bokar för: {bookingCustomer.FirstName} {bookingCustomer.LastName} (kundnr {bookingCustomer.Id})");
+                Console.WriteLine(
+                    $"Bokar för: {bookingCustomer.FirstName} {bookingCustomer.LastName} (kundnr {bookingCustomer.Id})");
                 Console.ResetColor();
 
                 Console.Write("Ange rum-id från sökresultatet: ");
@@ -299,7 +241,8 @@ while (running)
 
                 if (searchIn != null)
                 {
-                    Console.Write($"Samma datum och antal som sökningen? ({searchIn} – {searchOut}, {searchGuests} pers) Enter = ja, n = nej: ");
+                    Console.Write(
+                        $"Samma datum och antal som sökningen? ({searchIn} – {searchOut}, {searchGuests} pers) Enter = ja, n = nej: ");
                 }
 
                 string? sameInput = searchIn != null ? Console.ReadLine() : "n";
@@ -373,8 +316,10 @@ while (running)
                 Console.ResetColor();
                 foreach (BookingInfo booking in customerBookings)
                 {
-                    Console.WriteLine($"  Bokning {booking.BookingNumber}: {booking.HotelName}, {booking.City} – rum {booking.RoomName}, {booking.StartDate} – {booking.EndDate}, {booking.NumberOfGuests} pers, totalt {booking.TotalPrice:0} kr");
+                    Console.WriteLine(
+                        $"  Bokning {booking.BookingNumber}: {booking.HotelName}, {booking.City} – rum {booking.RoomName}, {booking.StartDate} – {booking.EndDate}, {booking.NumberOfGuests} pers, totalt {booking.TotalPrice:0} kr");
                 }
+
                 Console.WriteLine();
 
                 break;

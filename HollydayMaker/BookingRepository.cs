@@ -31,7 +31,7 @@ public class BookingRepository(MySqlConnection connection)
     }
 
     // READ: Kontroll innan bokning sparas för att undvika krock.
-    
+
     public async Task<bool> IsRoomAvailableAsync(int roomId, DateOnly checkIn, DateOnly checkOut)
     {
         //Kontroll om den nya bokningen börjar innan den befintliga slutar + om den nya bokningen slutar efter den befintliga börjat.
@@ -70,7 +70,6 @@ public class BookingRepository(MySqlConnection connection)
     //READ: Visa bokningar
     public async Task<List<BookingInfo>> GetBookingsForCustomerAsync(int customerId)
     {
-
         await using var command = new MySqlCommand(
             """
             SELECT bookings.id, hotels.name AS hotel_name, hotels.city, rooms.name AS room_name,
@@ -105,22 +104,22 @@ public class BookingRepository(MySqlConnection connection)
 
     //UPDATE: Antra antal gäster, måste rymmas i rummet
     public async Task<int> UpdateGuestsAsync(int bookingId, int numberOfGuests)
-    //Subqueryn hämtar kapacitet för den här bokningens rum. Om antalet är för stort uppdateras 0
-    //rader. 
+        //Subqueryn hämtar kapacitet för den här bokningens rum. Om antalet är för stort uppdateras 0
+        //rader. 
     {
-    await using var command = new MySqlCommand(
-        """
-        UPDATE bookings
-        SET number_of_guests = @numberOfGuests
-        WHERE id = @bookingId
-        AND @numberOfGuests <= (SELECT capacity FROM rooms WHERE rooms.id = bookings.room_id);
-        """, connection);
-    command.Parameters.AddWithValue("@bookingId", bookingId);
-    command.Parameters.AddWithValue("@numberOfGuests", numberOfGuests);
+        await using var command = new MySqlCommand(
+            """
+            UPDATE bookings
+            SET number_of_guests = @numberOfGuests
+            WHERE id = @bookingId
+            AND @numberOfGuests <= (SELECT capacity FROM rooms WHERE rooms.id = bookings.room_id);
+            """, connection);
+        command.Parameters.AddWithValue("@bookingId", bookingId);
+        command.Parameters.AddWithValue("@numberOfGuests", numberOfGuests);
 
-    int rowsAffected = await command.ExecuteNonQueryAsync();
+        int rowsAffected = await command.ExecuteNonQueryAsync();
         return rowsAffected;
-}
+    }
 
     // READ: totalpris för en bokning (antal nätter × pris per natt)
     public async Task<decimal> GetTotalPriceAsync(int bookingId)

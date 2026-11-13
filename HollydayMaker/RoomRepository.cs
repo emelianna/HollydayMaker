@@ -6,9 +6,10 @@ public class RoomRepository(MySqlConnection connection)
 {
     // READ: visar lediga rum på en ort, med plats för sällskapet under hela perioden (punkt 2)
     public async Task<List<AvailableRoom>> SearchAvailableRoomsAsync(
-        string city, DateOnly checkIn, DateOnly checkOut, int guests, bool poolRequired, bool restaurantRequired, int? maxBeach, int? maxCenter, string sortBy)
-    //Om valt checkin är före en befintlig boknings checkout och valt checkout är efter samma boknings checkin
-    //så krockar de => rummet visas inte.
+            string city, DateOnly checkIn, DateOnly checkOut, int guests, bool poolRequired, bool restaurantRequired,
+            int? maxBeach, int? maxCenter, string sortBy)
+        //Om valt checkin är före en befintlig boknings checkout och valt checkout är efter samma boknings checkin
+        //så krockar de => rummet visas inte.
     {
         await using var command = new MySqlCommand(
             """
@@ -41,7 +42,7 @@ public class RoomRepository(MySqlConnection connection)
         await command.PrepareAsync();
         await using var reader = await command.ExecuteReaderAsync();
 
-        var rooms = new List<AvailableRoom>();           
+        var rooms = new List<AvailableRoom>();
         while (await reader.ReadAsync())
         {
             rooms.Add(new AvailableRoom(
@@ -52,9 +53,10 @@ public class RoomRepository(MySqlConnection connection)
                 reader.GetInt32("capacity"),
                 reader.GetDecimal("price")));
         }
-        return rooms;         //Lista på tillgängliga rum som rymmer hela sällskapet
+
+        return rooms; //Lista på tillgängliga rum som rymmer hela sällskapet
     }
-    
+
     public async Task<bool> CityExistsAsync(string city)
     {
         string sql = "SELECT COUNT(*) FROM hotels WHERE city = @city;";

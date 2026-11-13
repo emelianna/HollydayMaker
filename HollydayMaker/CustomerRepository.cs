@@ -16,7 +16,7 @@ public class CustomerRepository(MySqlConnection connection)
         await using var reader = await command.ExecuteReaderAsync();
 
         var customers = new List<Customer>();
- 
+
         while (await reader.ReadAsync()) // så länge det finns en rad till, läs den
         {
             customers.Add(new Customer(
@@ -26,9 +26,10 @@ public class CustomerRepository(MySqlConnection connection)
                 reader.GetString("phone_number"),
                 reader.IsDBNull(reader.GetOrdinal("email")) ? null : reader.GetString("email")));
         }
+
         return customers;
     }
-    
+
     // CREATE: id genereras av databasen.
     public async Task<int> CreateCustomerAsync(string firstName, string lastName, string phoneNumber, string? email)
     {
@@ -39,11 +40,11 @@ public class CustomerRepository(MySqlConnection connection)
             """, connection);
         command.Parameters.AddWithValue("@firstName", firstName);
         command.Parameters.AddWithValue("@lastName", lastName);
-        command.Parameters.AddWithValue("@email", email ?? (object)DBNull.Value); //använd email, eller DBNull om den saknas
+        command.Parameters.AddWithValue("@email",
+            email ?? (object)DBNull.Value); //använd email, eller DBNull om den saknas
         command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
         await command.PrepareAsync();
         await command.ExecuteNonQueryAsync();
         return checked((int)command.LastInsertedId); //frågar "vilket id fick raden du nyss skapade?
     }
 }
-
