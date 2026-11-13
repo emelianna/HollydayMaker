@@ -82,11 +82,16 @@ else
 bool running = true;
 
 int selectedCustomerId = 0; //0 = ingen kund vald än
+DateOnly? searchIn = null;   // null = ingen sökning gjord än
+DateOnly? searchOut = null;
+int searchGuests = 0;
 
 while (running)
 {
     Console.WriteLine();
+    Console.ForegroundColor = ConsoleColor.Yellow;
     Console.WriteLine("***** HOLIDAY MAKER *****");
+    Console.ResetColor();
     Console.WriteLine("--Så här bokar du:--");
     Console.WriteLine("1 Välj/registrera kund => 2 Sök lediga rum => 3 Boka med rum-id från sökningen.");
     Console.WriteLine();
@@ -110,10 +115,16 @@ while (running)
         {
             case "1":
                 List<Customer> allCustomers = await customerRepository.GetCustomersAsync();
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.WriteLine("Registrerade kunder:");
+                Console.ResetColor();
                 foreach (Customer customer in allCustomers)
                 {
-                    Console.WriteLine(customer);
+                    string email = customer.Email ?? "ingen e-post";
+                    Console.WriteLine($"Kundnr {customer.Id}: {customer.FirstName} {customer.LastName}, tel {customer.PhoneNumber}, {email}");
                 }
+                Console.WriteLine();
 
                 Console.Write("Ange kundnummer, n för ny kund (0 = tillbaka till menyn): ");
                 string? customerChoiceInput = Console.ReadLine();
@@ -145,7 +156,9 @@ while (running)
                 else
                 {
                     selectedCustomerId = int.Parse(customerChoiceInput!);
-                    Console.WriteLine($"Kund {selectedCustomerId} är vald.");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"Kund {selectedCustomerId} är vald. Fortsätt med val 2 om du vill se lediga rum");
+                    Console.ResetColor();
                 }
 
                 break;
@@ -171,6 +184,9 @@ while (running)
                 Console.Write("Antal personer: ");
                 string? guestsInput = Console.ReadLine();
                 int guests = int.Parse(guestsInput!);
+                searchIn = inDate;
+                searchOut = outDate;
+                searchGuests = guests;
 
                 Console.Write("Är pool ett krav? (j/n): ");
                 string? poolInput = Console.ReadLine();
@@ -209,7 +225,11 @@ while (running)
                     poolRequired,
                     restaurantRequired, maxBeach, maxCenter, sortBy);
 
+                Console.WriteLine();
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("Alternativ som passar din sökning:");
+                Console.ResetColor();
+                
                 foreach (AvailableRoom room in rooms)
                 {
                     Console.WriteLine(
@@ -234,14 +254,32 @@ while (running)
                 Console.Write("Ange rum-id från sökresultatet: ");
                 int bookRoomId = int.Parse(Console.ReadLine()!);
 
-                Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
-                DateOnly bookIn = DateOnly.Parse(Console.ReadLine()!);
+                DateOnly bookIn;
+                DateOnly bookOut;
+                int bookGuests;
 
-                Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
-                DateOnly bookOut = DateOnly.Parse(Console.ReadLine()!);
+                if (searchIn != null)
+                {
+                    Console.Write($"Samma datum och antal som sökningen? ({searchIn} – {searchOut}, {searchGuests} pers) Enter = ja, n = nej: ");
+                }
 
-                Console.Write("Antal personer: ");
-                int bookGuests = int.Parse(Console.ReadLine()!);
+                string? sameInput = searchIn != null ? Console.ReadLine() : "n";
+
+                if (sameInput == "")
+                {
+                    bookIn = searchIn!.Value;
+                    bookOut = searchOut!.Value;
+                    bookGuests = searchGuests;
+                }
+                else
+                {
+                    Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
+                    bookIn = DateOnly.Parse(Console.ReadLine()!);
+                    Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
+                    bookOut = DateOnly.Parse(Console.ReadLine()!);
+                    Console.Write("Antal personer: ");
+                    bookGuests = int.Parse(Console.ReadLine()!);
+                }
 
 
                 bool roomIsFree = await bookingRepository.IsRoomAvailableAsync(bookRoomId, bookIn, bookOut);
@@ -252,19 +290,25 @@ while (running)
                             bookGuests);
                     if (newBookingId == 0)
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(
                             "Bokningen gick inte: rummet har inte plats för så många, eller så finns inte rum-id:t.");
+                        Console.ResetColor();
                     }
                     else
                     {
                         decimal totalPrice = await bookingRepository.GetTotalPriceAsync(newBookingId);
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine(
                             $"Bokning skapad! Bokningsnummer: {newBookingId}, totalpris: {totalPrice} kr");
+                        Console.ResetColor();
                     }
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
+                    Console.ResetColor();
                 }
 
                 break;
@@ -284,7 +328,9 @@ while (running)
                 List<BookingInfo> customerBookings =
                     await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
 
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine($"Bokningar gjorda med det kundnumret: {customerBookings.Count}");
+                Console.ResetColor();
                 foreach (BookingInfo booking in customerBookings)
                 {
                     Console.WriteLine(booking);
@@ -310,11 +356,15 @@ while (running)
 
                 if (updatedRows == 1)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Antalet personer är ändrat.");
+                    Console.ResetColor();
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Det gick inte! Rummet har inte plats, eller så finns inte bokningen.");
+                    Console.ResetColor();
                 }
 
                 break;
@@ -334,11 +384,15 @@ while (running)
 
                 if (deletedRows == 1)
                 {
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Bokningen är avbokad.");
+                    Console.ResetColor();
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Ingen bokning med det numret hittades.");
+                    Console.ResetColor();
                 }
 
                 break;
@@ -348,12 +402,16 @@ while (running)
                 Console.WriteLine("Hej då!");
                 break;
             default:
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Ogiltigt val, försök igen.");
+                Console.ResetColor();
                 break;
         }
     }
     catch (Exception)
     {
+        Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("Något gick fel, troligen felaktig inmatning. Försök igen.");
+        Console.ResetColor();
     }
 }
