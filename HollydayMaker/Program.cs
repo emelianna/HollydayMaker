@@ -185,7 +185,16 @@ while (running)
                 maxCenter = int.Parse(centerInput!);
             }
             
-            List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests, poolRequired, restaurantRequired, maxBeach, maxCenter);
+            Console.Write("Sortera efter 1 = pris (lägst först), 2 = omdöme (högst först): ");
+            string? sortInput = Console.ReadLine();
+            string sortBy = "price";
+            if (sortInput == "2")
+            {
+                sortBy = "rating";
+            }
+
+            List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests, poolRequired, 
+                restaurantRequired, maxBeach, maxCenter, sortBy);
 
             Console.WriteLine("Alternativ som passar din sökning:");
             foreach (AvailableRoom room in rooms)

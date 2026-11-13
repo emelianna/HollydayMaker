@@ -6,7 +6,7 @@ public class RoomRepository(MySqlConnection connection)
 {
     // READ: visar lediga rum på en ort, med plats för sällskapet under hela perioden (punkt 2)
     public async Task<List<AvailableRoom>> SearchAvailableRoomsAsync(
-        string city, DateOnly checkIn, DateOnly checkOut, int guests, bool poolRequired, bool restaurantRequired, int? maxBeach, int? maxCenter)
+        string city, DateOnly checkIn, DateOnly checkOut, int guests, bool poolRequired, bool restaurantRequired, int? maxBeach, int? maxCenter, string sortBy)
     //Om valt checkin är före en befintlig boknings checkout och valt checkout är efter samma boknings checkin
     //så krockar de => rummet visas inte.
     {
@@ -25,7 +25,9 @@ public class RoomRepository(MySqlConnection connection)
               AND rooms.id NOT IN
                   (SELECT room_id FROM bookings
                    WHERE @checkIn < end_date AND @checkOut > start_date)
-            ORDER BY rooms.price;
+            ORDER BY 
+            CASE WHEN @sortBy = 'rating' THEN hotels.rating END DESC,
+            rooms.price;
             """, connection);
         command.Parameters.AddWithValue("@city", city);
         command.Parameters.AddWithValue("@guests", guests);
@@ -35,6 +37,7 @@ public class RoomRepository(MySqlConnection connection)
         command.Parameters.AddWithValue("@restaurantRequired", restaurantRequired);
         command.Parameters.AddWithValue("@maxBeach", maxBeach ?? (object)DBNull.Value);
         command.Parameters.AddWithValue("@maxCenter", maxCenter ?? (object)DBNull.Value);
+        command.Parameters.AddWithValue("@sortBy", sortBy);
         await command.PrepareAsync();
         await using var reader = await command.ExecuteReaderAsync();
 
