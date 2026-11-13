@@ -122,4 +122,21 @@ public class BookingRepository(MySqlConnection connection)
         return rowsAffected;
 }
 
+    // READ: totalpris för en bokning (antal nätter × pris per natt)
+    public async Task<decimal> GetTotalPriceAsync(int bookingId)
+    {
+        await using var command = new MySqlCommand(
+            """
+            SELECT DATEDIFF(bookings.end_date, bookings.start_date) * rooms.price
+            FROM bookings
+                JOIN rooms ON rooms.id = bookings.room_id
+            WHERE bookings.id = @bookingId;
+            """, connection);
+        command.Parameters.AddWithValue("@bookingId", bookingId);
+        await command.PrepareAsync();
+
+        object? result = await command.ExecuteScalarAsync();
+        decimal totalPrice = Convert.ToDecimal(result);
+        return totalPrice;
+    }
 }

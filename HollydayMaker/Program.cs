@@ -104,224 +104,235 @@ while (running)
 
     string? choice = Console.ReadLine();
 
-    switch (choice)
+    try
     {
-        case "1":
-            List<Customer> allCustomers = await customerRepository.GetCustomersAsync();
-            foreach (Customer customer in allCustomers)
-            {
-                Console.WriteLine(customer);
-            }
-
-            Console.Write("Ange kundnummer (eller 0 för ny kund): ");
-            string? customerChoiceInput = Console.ReadLine();
-            int customerChoice = int.Parse(customerChoiceInput!);
-
-            if (customerChoice == 0)
-            {
-                Console.Write("Förnamn: ");
-                string firstName = Console.ReadLine()!;
-                Console.Write("Efternamn: ");
-                string lastName = Console.ReadLine()!;
-                Console.Write("Telefon: ");
-                string phone = Console.ReadLine()!;
-                Console.Write("E-post (tryck Enter för att hoppa över): ");
-                string? emailInput = Console.ReadLine();
-                string? email = null;
-                if (emailInput != "")
+        switch (choice)
+        {
+            case "1":
+                List<Customer> allCustomers = await customerRepository.GetCustomersAsync();
+                foreach (Customer customer in allCustomers)
                 {
-                    email = emailInput;
+                    Console.WriteLine(customer);
                 }
 
-                selectedCustomerId = await customerRepository.CreateCustomerAsync(firstName, lastName, phone, email);
-                Console.WriteLine($"Ny kund skapad med kundnummer {selectedCustomerId}.");
-            }
-            else
-            {
-                selectedCustomerId = customerChoice;
-                Console.WriteLine($"Kund {selectedCustomerId} är vald.");
-            }
+                Console.Write("Ange kundnummer (eller 0 för ny kund): ");
+                string? customerChoiceInput = Console.ReadLine();
+                int customerChoice = int.Parse(customerChoiceInput!);
 
-            break;
-
-        case "2":
-            Console.WriteLine("Vilken ort?: ");
-            string? cityInput = Console.ReadLine();
-            string city = cityInput!;
-
-            Console.WriteLine("Ange datum för incheckning (ÅÅÅÅ-MM-DD): ");
-            string? inDateInput = Console.ReadLine();
-            DateOnly inDate = DateOnly.Parse(inDateInput!);
-
-            Console.Write("Ange datum för utcheckning (ÅÅÅÅ-MM-DD): ");
-            string? outDateInput = Console.ReadLine();
-            DateOnly outDate = DateOnly.Parse(outDateInput!);
-
-            Console.Write("Antal personer: ");
-            string? guestsInput = Console.ReadLine();
-            int guests = int.Parse(guestsInput!);
-
-            Console.Write("Är pool ett krav? (j/n): ");
-            string? poolInput = Console.ReadLine();
-            bool poolRequired = poolInput == "j";
-
-            Console.Write("Är restaurang ett krav? (j/n): ");
-            string? restaurantInput = Console.ReadLine();
-            bool restaurantRequired = restaurantInput == "j";
-
-            Console.Write("Max avstånd till strand i meter (Enter = spelar ingen roll): ");
-            string? beachInput = Console.ReadLine();
-            int? maxBeach = null;
-            if (beachInput != "")
-            {
-                maxBeach = int.Parse(beachInput!);
-            }
-
-            Console.Write("Max avstånd till centrum i meter (Enter = spelar ingen roll): ");
-            string? centerInput = Console.ReadLine();
-            int? maxCenter = null;
-            if (centerInput != "")
-            {
-                maxCenter = int.Parse(centerInput!);
-            }
-
-            Console.Write("Sortera efter 1 = pris (lägst först), 2 = omdöme (högst först): ");
-            string? sortInput = Console.ReadLine();
-            string sortBy = "price";
-            if (sortInput == "2")
-            {
-                sortBy = "rating";
-            }
-
-            List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate, guests,
-                poolRequired,
-                restaurantRequired, maxBeach, maxCenter, sortBy);
-
-            Console.WriteLine("Alternativ som passar din sökning:");
-            foreach (AvailableRoom room in rooms)
-            {
-                Console.WriteLine(
-                    $"Rum-id {room.RoomId}: {room.HotelName}, {room.City} – rum {room.RoomName}, {room.Capacity} pers, {room.Price} kr/natt");
-            }
-
-            break;
-
-        case "3":
-            if (selectedCustomerId == 0)
-            {
-                Console.WriteLine("Om bokningen gäller en ny kund, registrera via val 1 först.");
-                Console.Write("Ange kundnummer (eller 0 för att komma tillbaka till menyn): ");
-                string? bookCustomerInput = Console.ReadLine();
-                selectedCustomerId = int.Parse(bookCustomerInput!);
-                if (selectedCustomerId == 0)
+                if (customerChoice == 0)
                 {
-                    break;
-                }
-            }
+                    Console.Write("Förnamn: ");
+                    string firstName = Console.ReadLine()!;
+                    Console.Write("Efternamn: ");
+                    string lastName = Console.ReadLine()!;
+                    Console.Write("Telefon: ");
+                    string phone = Console.ReadLine()!;
+                    Console.Write("E-post (tryck Enter för att hoppa över): ");
+                    string? emailInput = Console.ReadLine();
+                    string? email = null;
+                    if (emailInput != "")
+                    {
+                        email = emailInput;
+                    }
 
-            Console.Write("Ange rum-id från sökresultatet: ");
-            int bookRoomId = int.Parse(Console.ReadLine()!);
-
-            Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
-            DateOnly bookIn = DateOnly.Parse(Console.ReadLine()!);
-
-            Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
-            DateOnly bookOut = DateOnly.Parse(Console.ReadLine()!);
-
-            Console.Write("Antal personer: ");
-            int bookGuests = int.Parse(Console.ReadLine()!);
-
-
-            bool roomIsFree = await bookingRepository.IsRoomAvailableAsync(bookRoomId, bookIn, bookOut);
-            if (roomIsFree)
-            {
-                int newBookingId =
-                    await bookingRepository.CreateBookingAsync(selectedCustomerId, bookRoomId, bookIn, bookOut,
-                        bookGuests);
-                if (newBookingId == 0)
-                {
-                    Console.WriteLine(
-                        "Bokningen gick inte: rummet har inte plats för så många, eller så finns inte rum-id:t.");
+                    selectedCustomerId =
+                        await customerRepository.CreateCustomerAsync(firstName, lastName, phone, email);
+                    Console.WriteLine($"Ny kund skapad med kundnummer {selectedCustomerId}.");
                 }
                 else
                 {
-                    Console.WriteLine($"Bokning skapad! Bokningsnummer: {newBookingId}");
+                    selectedCustomerId = customerChoice;
+                    Console.WriteLine($"Kund {selectedCustomerId} är vald.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
-            }
 
-            break;
+                break;
 
-        // TODO (fredag):
-        // 1. Kontrollera att antalet personer ryms i rummet (i SQL)
-        // 2. Visa totalpris i bekräftelsen (antal nätter × pris per natt) 
-        // 3. Hantera felaktig inmatning (kund/rum som inte finns, TryParse)
+            case "2":
+                Console.WriteLine("Vilken ort?: ");
+                string? cityInput = Console.ReadLine();
+                string city = cityInput!;
 
-        case "4":
-            Console.Write("Ange kundnummer: ");
-            string? customerIdInput = Console.ReadLine();
-            int customerIdToShow = int.Parse(customerIdInput!);
+                Console.WriteLine("Ange datum för incheckning (ÅÅÅÅ-MM-DD): ");
+                string? inDateInput = Console.ReadLine();
+                DateOnly inDate = DateOnly.Parse(inDateInput!);
 
-            List<BookingInfo> customerBookings = await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
+                Console.Write("Ange datum för utcheckning (ÅÅÅÅ-MM-DD): ");
+                string? outDateInput = Console.ReadLine();
+                DateOnly outDate = DateOnly.Parse(outDateInput!);
 
-            Console.WriteLine($"Bokningar gjorda med det kundnumret: {customerBookings.Count}");
-            foreach (BookingInfo booking in customerBookings)
-            {
-                Console.WriteLine(booking);
-            }
+                Console.Write("Antal personer: ");
+                string? guestsInput = Console.ReadLine();
+                int guests = int.Parse(guestsInput!);
 
-            break;
+                Console.Write("Är pool ett krav? (j/n): ");
+                string? poolInput = Console.ReadLine();
+                bool poolRequired = poolInput == "j";
 
-        case "5":
-            Console.Write("Ange bokningsnummer: ");
-            string? changeIdInput = Console.ReadLine();
-            int bookingIdToChange = int.Parse(changeIdInput!);
+                Console.Write("Är restaurang ett krav? (j/n): ");
+                string? restaurantInput = Console.ReadLine();
+                bool restaurantRequired = restaurantInput == "j";
 
-            Console.Write("Nytt antal personer: ");
-            string? newGuestsInput = Console.ReadLine();
-            int newGuests = int.Parse(newGuestsInput!);
+                Console.Write("Max avstånd till strand i meter (Enter = spelar ingen roll): ");
+                string? beachInput = Console.ReadLine();
+                int? maxBeach = null;
+                if (beachInput != "")
+                {
+                    maxBeach = int.Parse(beachInput!);
+                }
 
-            int updatedRows = await bookingRepository.UpdateGuestsAsync(bookingIdToChange, newGuests);
+                Console.Write("Max avstånd till centrum i meter (Enter = spelar ingen roll): ");
+                string? centerInput = Console.ReadLine();
+                int? maxCenter = null;
+                if (centerInput != "")
+                {
+                    maxCenter = int.Parse(centerInput!);
+                }
 
-            if (updatedRows == 1)
-            {
-                Console.WriteLine("Antalet personer är ändrat.");
-            }
-            else
-            {
-                Console.WriteLine("Det gick inte! Rummet har inte plats, eller så finns inte bokningen.");
-            }
+                Console.Write("Sortera efter 1 = pris (lägst först), 2 = omdöme (högst först): ");
+                string? sortInput = Console.ReadLine();
+                string sortBy = "price";
+                if (sortInput == "2")
+                {
+                    sortBy = "rating";
+                }
 
-            break;
+                List<AvailableRoom> rooms = await roomRepository.SearchAvailableRoomsAsync(city, inDate, outDate,
+                    guests,
+                    poolRequired,
+                    restaurantRequired, maxBeach, maxCenter, sortBy);
+
+                Console.WriteLine("Alternativ som passar din sökning:");
+                foreach (AvailableRoom room in rooms)
+                {
+                    Console.WriteLine(
+                        $"Rum-id {room.RoomId}: {room.HotelName}, {room.City} – rum {room.RoomName}, {room.Capacity} pers, {room.Price} kr/natt");
+                }
+
+                break;
+
+            case "3":
+                if (selectedCustomerId == 0)
+                {
+                    Console.WriteLine("Om bokningen gäller en ny kund, registrera via val 1 först.");
+                    Console.Write("Ange kundnummer (eller 0 för att komma tillbaka till menyn): ");
+                    string? bookCustomerInput = Console.ReadLine();
+                    selectedCustomerId = int.Parse(bookCustomerInput!);
+                    if (selectedCustomerId == 0)
+                    {
+                        break;
+                    }
+                }
+
+                Console.Write("Ange rum-id från sökresultatet: ");
+                int bookRoomId = int.Parse(Console.ReadLine()!);
+
+                Console.Write("Incheckning (ÅÅÅÅ-MM-DD): ");
+                DateOnly bookIn = DateOnly.Parse(Console.ReadLine()!);
+
+                Console.Write("Utcheckning (ÅÅÅÅ-MM-DD): ");
+                DateOnly bookOut = DateOnly.Parse(Console.ReadLine()!);
+
+                Console.Write("Antal personer: ");
+                int bookGuests = int.Parse(Console.ReadLine()!);
 
 
-        case "6":
-            Console.Write("Ange bokningsnummer att avboka: ");
-            string? bookingIdInput = Console.ReadLine();
-            int bookingIdToDelete = int.Parse(bookingIdInput!);
+                bool roomIsFree = await bookingRepository.IsRoomAvailableAsync(bookRoomId, bookIn, bookOut);
+                if (roomIsFree)
+                {
+                    int newBookingId =
+                        await bookingRepository.CreateBookingAsync(selectedCustomerId, bookRoomId, bookIn, bookOut,
+                            bookGuests);
+                    if (newBookingId == 0)
+                    {
+                        Console.WriteLine(
+                            "Bokningen gick inte: rummet har inte plats för så många, eller så finns inte rum-id:t.");
+                    }
+                    else
+                    {
+                        decimal totalPrice = await bookingRepository.GetTotalPriceAsync(newBookingId);
+                        Console.WriteLine(
+                            $"Bokning skapad! Bokningsnummer: {newBookingId}, totalpris: {totalPrice} kr");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Rummet är tyvärr redan bokat under den perioden.");
+                }
 
-            int deletedRows = await bookingRepository.DeleteBookingAsync(bookingIdToDelete);
+                break;
 
-            if (deletedRows == 1)
-            {
-                Console.WriteLine("Bokningen är avbokad.");
-            }
-            else
-            {
-                Console.WriteLine("Ingen bokning med det numret hittades.");
-            }
+            // TODO (fredag):
 
-            break;
+            // 3. Hantera felaktig inmatning (kund/rum som inte finns, TryParse)
 
-        case "0":
-            running = false;
-            Console.WriteLine("Hej då!");
-            break;
-        default:
-            Console.WriteLine("Ogiltigt val, försök igen.");
-            break;
+            case "4":
+                Console.Write("Ange kundnummer: ");
+                string? customerIdInput = Console.ReadLine();
+                int customerIdToShow = int.Parse(customerIdInput!);
+
+                List<BookingInfo> customerBookings =
+                    await bookingRepository.GetBookingsForCustomerAsync(customerIdToShow);
+
+                Console.WriteLine($"Bokningar gjorda med det kundnumret: {customerBookings.Count}");
+                foreach (BookingInfo booking in customerBookings)
+                {
+                    Console.WriteLine(booking);
+                }
+
+                break;
+
+            case "5":
+                Console.Write("Ange bokningsnummer: ");
+                string? changeIdInput = Console.ReadLine();
+                int bookingIdToChange = int.Parse(changeIdInput!);
+
+                Console.Write("Nytt antal personer: ");
+                string? newGuestsInput = Console.ReadLine();
+                int newGuests = int.Parse(newGuestsInput!);
+
+                int updatedRows = await bookingRepository.UpdateGuestsAsync(bookingIdToChange, newGuests);
+
+                if (updatedRows == 1)
+                {
+                    Console.WriteLine("Antalet personer är ändrat.");
+                }
+                else
+                {
+                    Console.WriteLine("Det gick inte! Rummet har inte plats, eller så finns inte bokningen.");
+                }
+
+                break;
+
+
+            case "6":
+                Console.Write("Ange bokningsnummer att avboka: ");
+                string? bookingIdInput = Console.ReadLine();
+                int bookingIdToDelete = int.Parse(bookingIdInput!);
+
+                int deletedRows = await bookingRepository.DeleteBookingAsync(bookingIdToDelete);
+
+                if (deletedRows == 1)
+                {
+                    Console.WriteLine("Bokningen är avbokad.");
+                }
+                else
+                {
+                    Console.WriteLine("Ingen bokning med det numret hittades.");
+                }
+
+                break;
+
+            case "0":
+                running = false;
+                Console.WriteLine("Hej då!");
+                break;
+            default:
+                Console.WriteLine("Ogiltigt val, försök igen.");
+                break;
+        }
+    }
+    catch (Exception)
+    {
+        Console.WriteLine("Något gick fel, troligen felaktig inmatning. Försök igen.");
     }
 }
